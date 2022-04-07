@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "USB_Appka_Cy", "USB_Appka_Cy\USB_Appka_Cy.csproj", "{9523E8C0-F7EC-4EDA-AD6C-0EF4F2E2044B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9523E8C0-F7EC-4EDA-AD6C-0EF4F2E2044B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9523E8C0-F7EC-4EDA-AD6C-0EF4F2E2044B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9523E8C0-F7EC-4EDA-AD6C-0EF4F2E2044B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9523E8C0-F7EC-4EDA-AD6C-0EF4F2E2044B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {231176DE-B237-41FA-8FAB-07EAF2C37821}
+	EndGlobalSection
+EndGlobal
