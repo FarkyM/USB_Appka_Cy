@@ -42,6 +42,7 @@
             this.lbl_led = new System.Windows.Forms.Label();
             this.DeviceTreeView = new System.Windows.Forms.TreeView();
             this.btn_close = new System.Windows.Forms.Button();
+            this.lbl_Throughout = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -166,11 +167,21 @@
             this.btn_close.UseVisualStyleBackColor = true;
             this.btn_close.Click += new System.EventHandler(this.btn_close_Click);
             // 
+            // lbl_Throughout
+            // 
+            this.lbl_Throughout.AutoSize = true;
+            this.lbl_Throughout.Location = new System.Drawing.Point(271, 53);
+            this.lbl_Throughout.Name = "lbl_Throughout";
+            this.lbl_Throughout.Size = new System.Drawing.Size(13, 13);
+            this.lbl_Throughout.TabIndex = 9;
+            this.lbl_Throughout.Text = "0";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.lbl_Throughout);
             this.Controls.Add(this.btn_close);
             this.Controls.Add(this.DeviceTreeView);
             this.Controls.Add(this.lbl_led);
@@ -206,6 +217,7 @@
         private System.Windows.Forms.ToolStripMenuItem treeViewToolStripMenuItem;
         private System.Windows.Forms.TreeView DeviceTreeView;
         private System.Windows.Forms.Button btn_close;
+        private System.Windows.Forms.Label lbl_Throughout;
     }
 }
 

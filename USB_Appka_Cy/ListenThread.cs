@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using CyUSB; //potreba?
@@ -14,7 +15,7 @@ namespace USB_Appka_Cy
         /*Summary
   Data Xfer Thread entry point. Starts the thread on Start Button click 
 */
-        public unsafe void XferThread()
+   /*     public unsafe void XferThread()
         {
             // Setup the queue buffers
             byte[][] cmdBufs = new byte[QueueSz][];
@@ -53,7 +54,7 @@ namespace USB_Appka_Cy
             overlapDataHandle.Free();
             pktsInfoHandle.Free();
         }
-
+   */
 
 
 
@@ -63,7 +64,7 @@ namespace USB_Appka_Cy
         XferData, which will loop, transferring data, until the stop button is clicked.
         Then, the recursion will unwind.
         */
-        public unsafe void LockNLoad(byte[][] cBufs, byte[][] xBufs, byte[][] oLaps, ISO_PKT_INFO[][] pktsInfo)
+     /*   public unsafe void LockNLoad(byte[][] cBufs, byte[][] xBufs, byte[][] oLaps, ISO_PKT_INFO[][] pktsInfo)
         {
             int j = 0;
             int nLocalCount = j;
@@ -88,7 +89,7 @@ namespace USB_Appka_Cy
                 int sz = Math.Max(CyConst.OverlapSignalAllocSize, sizeof(OVERLAPPED));
                 oLaps[j] = new byte[sz];
                 pktsInfo[j] = new ISO_PKT_INFO[PPX];
-
+     */
                 /*/////////////////////////////////////////////////////////////////////////////
                  * 
                  * fixed keyword is getting thrown own by the compiler because the temporary variables 
@@ -108,7 +109,7 @@ namespace USB_Appka_Cy
                 /////////////////////////////////////////////////////////////////////////////*/
                 //fixed (byte* tL0 = oLaps[j], tc0 = cBufs[j], tb0 = xBufs[j])  // Pin the buffers in memory
                 //////////////////////////////////////////////////////////////////////////////////////////////
-                bufSingleTransfer[j] = GCHandle.Alloc(cBufs[j], GCHandleType.Pinned);
+             /*   bufSingleTransfer[j] = GCHandle.Alloc(cBufs[j], GCHandleType.Pinned);
                 bufDataAllocation[j] = GCHandle.Alloc(xBufs[j], GCHandleType.Pinned);
                 bufPktsInfo[j] = GCHandle.Alloc(pktsInfo[j], GCHandleType.Pinned);
                 handleOverlap[j] = GCHandle.Alloc(oLaps[j], GCHandleType.Pinned);
@@ -142,13 +143,13 @@ namespace USB_Appka_Cy
                     CyUSB.OVERLAPPED ovLapStatus = new CyUSB.OVERLAPPED();
                     ovLapStatus = (CyUSB.OVERLAPPED)Marshal.PtrToStructure(handleOverlap[nLocalCount].AddrOfPinnedObject(), typeof(CyUSB.OVERLAPPED));
                     PInvoke.CloseHandle(ovLapStatus.hEvent);
-
+             */
                     /*////////////////////////////////////////////////////////////////////////////////////////////
                      * 
                      * Release the pinned allocation handles.
                      * 
                     ////////////////////////////////////////////////////////////////////////////////////////////*/
-                    bufSingleTransfer[nLocalCount].Free();
+                 /*   bufSingleTransfer[nLocalCount].Free();
                     bufDataAllocation[nLocalCount].Free();
                     bufPktsInfo[nLocalCount].Free();
                     handleOverlap[nLocalCount].Free();
@@ -160,12 +161,12 @@ namespace USB_Appka_Cy
             }
             GC.Collect();
         }
-
+                 */
         /*Summary
           Called at the end of recursive method, LockNLoad().
           XferData() implements the infinite transfer loop
         */
-        public unsafe void XferData(byte[][] cBufs, byte[][] xBufs, byte[][] oLaps, ISO_PKT_INFO[][] pktsInfo, GCHandle[] handleOverlap)
+       /* public unsafe void XferData(byte[][] cBufs, byte[][] xBufs, byte[][] oLaps, ISO_PKT_INFO[][] pktsInfo, GCHandle[] handleOverlap)
         {
             int k = 0;
             int len = 0;
@@ -266,6 +267,6 @@ namespace USB_Appka_Cy
             EndPoint.Abort();
         }
 
-
+*/
     }
 }
