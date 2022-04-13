@@ -483,6 +483,7 @@ namespace USB_Appka_Cy
             SuccessBox.Text = Successes.ToString();
             FailuresBox.Text = Failures.ToString();*/
           lbl_Throughout.Text = xferRate.ToString();
+            log.Text = DataQueue.Count.ToString();
         }
 
         public void SelectDevice()
