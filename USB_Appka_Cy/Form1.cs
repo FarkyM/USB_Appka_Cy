@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,34 +14,27 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using CyUSB;
-/*
- * BOS - Binary (Device) Object Store
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- */
+
 namespace USB_Appka_Cy
 {
+    
     public partial class Form1 : Form
     {
         USBDeviceList usbDevices;
         CyUSBDevice myDevice;
         CyBulkEndPoint myBulkIn = null;
-        StringBuilder sb = new StringBuilder();
-        string FilePath = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),"log.txt");
-        DateTime t1, t2;
+       // string FilePath = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),"log.txt");
+        DateTime t1, t2,t3;
         TimeSpan elapsed;
         double XferBytes;
         long xferRate;
-
+        ConcurrentQueue<byte[][]> DataQueue = new ConcurrentQueue<byte[][]>();
         Thread tListen;
         bool bRunning;
 
+        Thread tFileWrite;
+        AutoResetEvent ThreadEvent = new AutoResetEvent(false);
+        
         int len = 5;
         int PaketsPerXfer = 256; //udelat do boxiku?
         int XfersToQueue = 16;
@@ -71,85 +66,7 @@ namespace USB_Appka_Cy
 
         }
 
-        /*  public unsafe void ListenThread()
-          {
-              if (myDevice == null) return;
-              CyBulkEndPoint InEndpt = myDevice.BulkInEndPt;
-              byte i = 0;
-              int PaketsPerXfer = 256; //udelat do boxiku?
-              int XfersToQueue = 16;
-
-              int BufSz = InEndpt.MaxPktSize * PaketsPerXfer;
-              InEndpt.XferSize = BufSz;
-
-              // Setup the queue buffers
-              byte[][] cmdBufs = new byte[XfersToQueue][];
-              byte[][] xferBufs = new byte[XfersToQueue][];
-              byte[][] ovLaps = new byte[XfersToQueue][];
-              for (i = 0; i < XfersToQueue; i++)
-              {
-                  cmdBufs[i] = new byte[CyConst.SINGLE_XFER_LEN + ((InEndpt.XferMode == XMODE.BUFFERED) ? BufSz : 0)];
-                  xferBufs[i] = new byte[BufSz];
-                  ovLaps[i] = new byte[CyConst.OverlapSignalAllocSize];
-
-                  fixed (byte* tmp0 = ovLaps[i])
-                  {
-                      OVERLAPPED* ovLapStatus = (OVERLAPPED*)tmp0;
-                      ovLapStatus->hEvent = PInvoke.CreateEvent(0, 0, 0, 0);
-                  }
-              }
-              // Pre-load the queue with requests
-              int len = BufSz;
-
-              for (i = 0; i < XfersToQueue; i++)
-                  InEndpt.BeginDataXfer(ref cmdBufs[i], ref xferBufs[i], ref len, ref ovLaps[i]);
-              i = 0;
-              int Successes = 0;
-              int Failures = 0;
-              XferBytes = 0;
-              t1 = DateTime.Now;
-              for (; StartBtn.Text.Equals("Stop");)
-              {
-                  fixed (byte* tmp0 = ovLaps[i])
-                  {
-                      OVERLAPPED* ovLapStatus = (OVERLAPPED*)tmp0;
-                      if (!InEndpt.WaitForXfer(ovLapStatus->hEvent, 500))
-                      {
-                          InEndpt.Abort();
-                          PInvoke.WaitForSingleObject(ovLapStatus->hEvent, CyConst.INFINITE);
-                      }
-                  }
-                  if (InEndpt.FinishDataXfer(ref cmdBufs[i], ref xferBufs[i], ref len, ref ovLaps[i]))
-                  {
-                      XferBytes += len;
-                      Successes++;
-                  }
-                  else
-                      Failures++;
-
-                  // Re-submit this buffer into the queue
-                  len = BufSz;
-                  InEndpt.BeginDataXfer(ref cmdBufs[i], ref xferBufs[i], ref len, ref ovLaps[i]);
-                  i++;
-                  if (i == XfersToQueue)
-                  {
-                      i = 0;
-                      t2 = DateTime.Now;
-                      elapsed = t2 - t1;
-                      xferRate = (long)(XferBytes / elapsed.TotalMilliseconds);
-                      xferRate = xferRate / (int)100 * (int)100;
-                      if (xferRate > ProgressBar.Maximum)
-                      ProgressBar.Maximum = (int)(xferRate * 1.25);
-                      ProgressBar.Value = (int)xferRate;
-                      ThroughputLabel.Text = ProgressBar.Value.ToString();
-                      SuccessBox.Text = Successes.ToString();
-                      FailuresBox.Text = Failures.ToString();
-                      Thread.Sleep(0);
-                  }
-              }
-          }
-
-          */
+       
 
         /*Summary
  Data Xfer Thread entry point. Starts the thread on Start Button click 
@@ -341,7 +258,7 @@ namespace USB_Appka_Cy
                 // FinishDataXfer
                 if (myBulkIn.FinishDataXfer(ref cBufs[k], ref xBufs[k], ref len, ref oLaps[k]))
                     {
-                    sb.Append(xBufs[k]);
+                   // sb.Append(BitConverter.ToString(xBufs[k]).Replace("-"," "));
                     XferBytes += len;
                         Successes++;
                     }
@@ -355,8 +272,13 @@ namespace USB_Appka_Cy
                     Failures++;
 
                 k++;
+                
                 if (k == XfersToQueue)  // Only update displayed stats once each time through the queue
                 {
+                    
+                    DataQueue.Enqueue(xBufs);
+                    if(tFileWrite.ThreadState == (ThreadState.WaitSleepJoin | ThreadState.Background ))
+                       tFileWrite.Interrupt();
                     k = 0;
 
                     t2 = DateTime.Now;
@@ -375,14 +297,24 @@ namespace USB_Appka_Cy
                 Thread.Sleep(0);
 
             } // End infinite loop
-            // Let's recall all the queued buffer and abort the end point.
-            File.AppendAllText(FilePath, sb.ToString());
-            sb.Clear();
+              // Let's recall all the queued buffer and abort the end point.
+          //  tFileWrite.Start();
             myBulkIn.Abort();
+            
         }
 
+    /*    public unsafe void StartWrite(object TxBuffer)
+        {
 
-
+            using (StreamWriter logfile = new StreamWriter(FilePath))
+            {
+                foreach (byte[] array in (byte[][])TxBuffer)
+            {
+                    logfile.Write(BitConverter.ToString(array));
+            }
+            }
+        }
+    */
 
 
 
@@ -459,16 +391,32 @@ namespace USB_Appka_Cy
             myBulkIn.XferSize = BufSz;
 
             bRunning = true;
+            FreeQueue(DataQueue);
             
             tListen = new Thread(new ThreadStart(XferThread));
             tListen.IsBackground = true;
             tListen.Priority = ThreadPriority.Highest;
+
+            tFileWrite = new Thread(WriteToFile.StartWriteThread); 
+           // tFileWrite = new Thread(StartWrite);
+            tFileWrite.IsBackground = true;
+            tFileWrite.Priority = ThreadPriority.AboveNormal;
+
+
+            tFileWrite.Start(DataQueue);
             tListen.Start();          
             
         }
+
+        private void FreeQueue(ConcurrentQueue<byte[][]> dataQueue)
+        {
+            while(dataQueue.Count > 0)
+            dataQueue.TryDequeue(out var data); //throu out data
+        }
+
         /*
-         * Veme si strukturu device infa a rozepise vlastnosti jednotlive node.
-         */
+* Veme si strukturu device infa a rozepise vlastnosti jednotlive node.
+*/
         private void treeViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DeviceTreeView.Nodes.Clear();
@@ -479,6 +427,7 @@ namespace USB_Appka_Cy
 
         private void btn_close_Click(object sender, EventArgs e)
         {
+
             btn_close.Enabled = false;
             if (tListen.IsAlive)
             {
@@ -497,7 +446,20 @@ namespace USB_Appka_Cy
 
                 btn_close.Enabled = false;
             }
-
+        /*    string FilePath = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "logy\\log.hex");
+            FileStream fs = new FileStream(FilePath, FileMode.Create);
+            using (BinaryWriter logfile = new BinaryWriter(fs))
+            {
+               while(DataQueue.Count > 0)
+                {
+                    DataQueue.TryDequeue(out byte[][] Data);
+                    foreach (byte[] Paket in Data)
+                    {
+                        logfile.Write(Paket);
+                    }
+                }
+            }
+            */
         }
 
         private void DeviceTreeView_AfterSelect(object sender, TreeViewEventArgs e)
