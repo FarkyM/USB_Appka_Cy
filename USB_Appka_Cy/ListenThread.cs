@@ -52,7 +52,7 @@ Data Xfer Thread entry point. Starts the thread on Start Button click
                 // This exception gets thrown if the device is unplugged 
                 // while we're streaming data
                 e.GetBaseException();
-                this.Invoke(handleException);
+               // this.Invoke(handleException);
             }
 
             //////////////////////////////////////////////////////////////////////////////
@@ -190,7 +190,7 @@ Data Xfer Thread entry point. Starts the thread on Start Button click
 
             for (; bRunning;)
             {
-                nIteration++;
+             //   nIteration++;
                 // WaitForXfer
                 unsafe
                 {
@@ -240,7 +240,7 @@ Data Xfer Thread entry point. Starts the thread on Start Button click
                     xferRate = xferRate / (int)100 * (int)100;
 
                     // Call StatusUpdate() in the main thread
-                    if (bRunning == true) this.Invoke(updateUI);
+                    //if (bRunning == true) Invoke(updateUI);
                     
                     // For small XfersToQueue or PPX, the loop is too tight for UI thread to ever get service.   
                     // Without this, app hangs in those scenarios.

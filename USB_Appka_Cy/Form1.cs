@@ -44,12 +44,12 @@ namespace USB_Appka_Cy
         public static int Failures =0;
 
         // These are needed to close the app from the Thread exception(exception handling)
-        public delegate void ExceptionCallback();
-        public static ExceptionCallback handleException;
+        delegate void ExceptionCallback();
+        ExceptionCallback handleException;
 
         // These are  needed for Thread to update the UI
-        public delegate void UpdateUICallback();
-        public static UpdateUICallback updateUI;
+        delegate void UpdateUICallback();
+        UpdateUICallback updateUI;
 
         public Form1()
         {
