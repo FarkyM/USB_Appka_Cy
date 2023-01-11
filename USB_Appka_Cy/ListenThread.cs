@@ -179,7 +179,7 @@ Data Xfer Thread entry point. Starts the thread on Start Button click
         {
             int k = 0;
             int len = 0;
-
+            bool FailFlag = false;
             Successes = 0;
             Failures = 0;
 
@@ -212,18 +212,36 @@ Data Xfer Thread entry point. Starts the thread on Start Button click
                 {
                     // sb.Append(BitConverter.ToString(xBufs[k]).Replace("-"," "));
                     XferBytes += len;
-                    Successes++;
+                    Successes++;                              
                 }
                 else
+                {
                     Failures++;
+                    FailFlag=true;
+                }
+
 
 
                 // Re-submit this buffer into the queue
                 len = BufSz;
                 if (myBulkIn.BeginDataXfer(ref cBufs[k], ref xBufs[k], ref len, ref oLaps[k]) == false)
                     Failures++;
+                //TODO pokud se nepovede tak neprenest
+                if(FailFlag)
+                {
+                  k--;
+                  FailFlag=false;
+                }
 
                 k++;
+
+                if((Failures/(Failures+Successes+10.0)>0.5))
+                {
+                    bRunning = false;
+                    ThreadEnd = true;
+                    break;
+                    
+                }
 
                 if (k == XfersToQueue)  // Only update displayed stats once each time through the queue
                 {
@@ -232,7 +250,7 @@ Data Xfer Thread entry point. Starts the thread on Start Button click
                     if (tFileWrite.ThreadState == (ThreadState.WaitSleepJoin | ThreadState.Background))
                         tFileWrite.Interrupt();
                     k = 0;
-
+                    
                     t2 = DateTime.Now;
                     elapsed = t2 - t1;
 
@@ -251,6 +269,7 @@ Data Xfer Thread entry point. Starts the thread on Start Button click
             } // End infinite loop
               // Let's recall all the queued buffer and abort the end point.
               //  tFileWrite.Start();
+
             myBulkIn.Abort();
 
         }

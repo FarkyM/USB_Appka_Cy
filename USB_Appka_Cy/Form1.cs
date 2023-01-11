@@ -32,7 +32,7 @@ namespace USB_Appka_Cy
         public static ConcurrentQueue<byte[][]> DataQueue = new ConcurrentQueue<byte[][]>();
         public static Thread tListen;
         public static bool bRunning;
-
+        public static bool ThreadEnd;
         public static Thread tFileWrite;
         AutoResetEvent ThreadEvent = new AutoResetEvent(false);
 
@@ -67,14 +67,17 @@ namespace USB_Appka_Cy
 
         }
 
-
+        int disconnect_count = 0;
         void usbDevices_DeviceRemoved(object sender, EventArgs e)
         {
             USBEventArgs usbEvent = e as USBEventArgs;
             lbl_Status.Text = usbEvent.FriendlyName + " removed.";
+            disconnect_count += 1;
+            lbl_fails.Text = disconnect_count.ToString(); 
         }
         void usbDevices_DeviceAttached(object sender, EventArgs e)
         {
+            SelectDevice();
             USBEventArgs usbEvent = e as USBEventArgs;
             lbl_Status.Text = usbEvent.Device.FriendlyName + " connected.";
         }
@@ -99,7 +102,7 @@ namespace USB_Appka_Cy
 
         private void bOSInfoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string usb3_BOS = myDevice.USBBos.ToString();
+            string usb3_BOS = myDevice.USBBos.ToString(); //TODO klekne to pokud ot neni usb3 compatible
             log.Text = usb3_BOS;
         }
 
@@ -124,7 +127,7 @@ namespace USB_Appka_Cy
 
             bRunning = true;
             FreeQueue(DataQueue);
-            
+            ThreadEnd = false;
             tListen = new Thread(ListenThread.XferThread);
             tListen.IsBackground = true;
             tListen.Priority = ThreadPriority.Highest;
@@ -164,19 +167,13 @@ namespace USB_Appka_Cy
             if (tListen.IsAlive)
             {
 
-                bRunning = false;
-
                 t2 = DateTime.Now;
                 elapsed = t2 - t1;
                 xferRate = (long)(XferBytes / elapsed.TotalMilliseconds);
                 xferRate = xferRate / (int)100 * (int)100;
 
-                if (tListen.Join(5000) == false)
-                    tListen.Abort();
+                CloseThread();
 
-                tListen = null;
-
-                btn_close.Enabled = false;
             }
         /*    string FilePath = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "logy\\log.hex");
             FileStream fs = new FileStream(FilePath, FileMode.Create);
@@ -193,7 +190,18 @@ namespace USB_Appka_Cy
             }
             */
         }
+        public void CloseThread()
+        {
+            bRunning = false;
+            ThreadEnd = false;
+            if (tListen.Join(5000) == false)
+                tListen.Abort();
 
+            tListen = null;
+
+            btn_close.Enabled = false;
+
+        }
         private void DeviceTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             TreeNode selNode = DeviceTreeView.SelectedNode;
@@ -205,8 +213,8 @@ namespace USB_Appka_Cy
         */
         public void StatusUpdate()
         {
+            if (ThreadEnd == true) CloseThread();
             if (bRunning == false) return;
-
             lbl_Throughout.Text = xferRate.ToString();
             log.Text = DataQueue.Count.ToString();
         }
