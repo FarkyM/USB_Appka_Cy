@@ -43,6 +43,8 @@
             this.DeviceTreeView = new System.Windows.Forms.TreeView();
             this.btn_close = new System.Windows.Forms.Button();
             this.lbl_Throughout = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.lbl_fails = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -159,6 +161,7 @@
             // 
             // btn_close
             // 
+            this.btn_close.Enabled = false;
             this.btn_close.Location = new System.Drawing.Point(146, 104);
             this.btn_close.Name = "btn_close";
             this.btn_close.Size = new System.Drawing.Size(75, 23);
@@ -176,11 +179,31 @@
             this.lbl_Throughout.TabIndex = 9;
             this.lbl_Throughout.Text = "0";
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(9, 76);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(94, 13);
+            this.label1.TabIndex = 10;
+            this.label1.Text = "Disconnect count:";
+            // 
+            // lbl_fails
+            // 
+            this.lbl_fails.AutoSize = true;
+            this.lbl_fails.Location = new System.Drawing.Point(109, 76);
+            this.lbl_fails.Name = "lbl_fails";
+            this.lbl_fails.Size = new System.Drawing.Size(22, 13);
+            this.lbl_fails.TabIndex = 11;
+            this.lbl_fails.Text = "xxx";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.lbl_fails);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.lbl_Throughout);
             this.Controls.Add(this.btn_close);
             this.Controls.Add(this.DeviceTreeView);
@@ -218,6 +241,8 @@
         private System.Windows.Forms.TreeView DeviceTreeView;
         private System.Windows.Forms.Button btn_close;
         private System.Windows.Forms.Label lbl_Throughout;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lbl_fails;
     }
 }
 
